@@ -17,8 +17,8 @@ $fonts_dir = abs_path($fonts_dir);
 $lualatex_flags = "-shell-escape -interaction=nonstopmode -synctex=1";
 
 # Set the default command to compile the document
-$pdflatex = 'lualatex';
-$latex = 'lualatex';
+$pdflatex = 'lualatex %O %S';
+$latex = 'lualatex %O %S';
 $latex_flags = $lualatex_flags;
 
 $ENV{'OSFONTDIR'} = "$fonts_dir:$ENV{'OSFONTDIR'}";
