@@ -9,16 +9,36 @@
 \newif\if@aneoDark
 \@aneoDarkfalse
 
+\newif\if@aneoArmoniK
+\@aneoArmoniKfalse
+
 \DeclareOption{blue}{\@aneoBluetrue}
 \DeclareOption{white}{\@aneoBluefalse}
 \DeclareOption{dark}{\@aneoDarktrue}
 \DeclareOption{light}{\@aneoDarkfalse}
+\DeclareOption{armonik}{\@aneoArmoniKtrue}
+\DeclareOption{noarmonik}{\@aneoArmoniKfalse}
 \ProcessOptions\relax
 
 \usetheme{default}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{graphicx}
+% Generic command: converts basename.svg to basename.pdf on first use, then includes it
+\newcommand{\aneoincludesvg}[2][]{%
+  \directlua{
+    local svgfile = kpse.find_file('#2.svg', 'tex')
+    if svgfile then
+      local dir = svgfile:match('(.*[/])')
+      local pdffile = dir .. '#2.pdf'
+      local f = io.open(pdffile, 'r')
+      if f then f:close() else
+        os.execute('inkscape "' .. svgfile .. '" --export-filename="' .. pdffile .. '"')
+      end
+    end
+  }%
+  \includegraphics[#1]{#2.pdf}%
+}
 \RequirePackage{poppinsfonts}
 
 % Set titles and subtitles in Poppins Semibold as
@@ -109,8 +129,12 @@
     };
     % Aneo and ArmoniK logos side by side
     \node[anchor=center]
-      at ([yshift=-0.14\paperheight]current page.center){%
-        \includegraphics[height=1.2cm]{LOGO_COULEUR_1.png}%
+      at ([yshift=-0.2\paperheight]current page.center){%
+        \includegraphics[height=1.3cm]{LOGO_COULEUR_1.png}%
+        \if@aneoArmoniK
+          \hspace{4em}%
+          \aneoincludesvg[height=1.3cm]{logo-ak}%
+        \fi
     };
   \end{tikzpicture}
 }
