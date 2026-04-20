@@ -183,19 +183,18 @@
   \ifnum\value{framenumber}>0%
     \leavevmode%
     \hbox to \paperwidth{%
-      \hskip-0.05em%
       % Author
       \begin{beamercolorbox}[wd=0.45\paperwidth,ht=2.5ex,dp=1ex,left]{author in head/foot}%
         \usebeamerfont{author in head/foot}\hspace{1em}\insertshortauthor
       \end{beamercolorbox}%
-      \hskip-0.05em%
       % Title
       \begin{beamercolorbox}[wd=0.4\paperwidth,ht=2.5ex,dp=1ex,left]{title in head/foot}%
         \usebeamerfont{title in head/foot}\insertshorttitle
       \end{beamercolorbox}%
-      \hskip-0.05em%
-      % Slide number
-      \begin{beamercolorbox}[wd=0.155\paperwidth,ht=2.5ex,dp=1ex,right]{title in head/foot}%
+      \kern-0.5pt%
+      % Slide number — 0.5pt overlap with title box closes PDF anti-aliasing seam;
+      % width adjusted so total remains exactly \paperwidth
+      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.45\paperwidth-0.4\paperwidth+0.5pt\relax,ht=2.5ex,dp=1ex,right]{title in head/foot}%
         \usebeamerfont{title in head/foot}\insertframenumber{}\hspace{1em}
       \end{beamercolorbox}%
   }%
@@ -224,14 +223,15 @@
 \setbeamertemplate{headline}{%
   \ifnum\value{framenumber}>0
     \leavevmode
-    \hbox{%
+    \hbox to \paperwidth{%
       % Left box: slide title, empty if not defined
       \begin{beamercolorbox}[wd=0.85\paperwidth,ht=3em,dp=2ex,leftskip=1em]{frametitle}%
         \usebeamerfont{frametitle}\safeinsertframetitle
       \end{beamercolorbox}%
-      \hskip-0.05em%
-      % Right box: aneo logo
-      \begin{beamercolorbox}[wd=0.155\paperwidth,ht=3em,dp=2ex,rightskip=1em]{frametitle}%
+      \kern-0.5pt%
+      % Right box: aneo logo — 0.5pt overlap closes PDF anti-aliasing seam;
+      % width adjusted so total remains exactly \paperwidth
+      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=3em,dp=2ex,rightskip=1em]{frametitle}%
         \hfill\includegraphics[height=2.5em]{\aneothemelogofile}%
       \end{beamercolorbox}%
     }%
