@@ -35,6 +35,9 @@
 
 % Color of items/numbers in lists
 \setbeamercolor{item}{fg=aneoorange}
+\setbeamertemplate{itemize item}{$\bullet$}
+\setbeamertemplate{itemize subitem}{$\bullet$}
+\setbeamertemplate{itemize subsubitem}{$\bullet$}
 
 % Color of the outline section
 \setbeamercolor{section in toc}{fg=aneoblue}
@@ -62,26 +65,32 @@
 % Define the title page emulating ppt aneo template
 \setbeamertemplate{title page}{%
   \begin{tikzpicture}[overlay, remember picture]
-    % split page in two colors
-    \fill[aneoblue] (current page.north west) rectangle ([xshift=0.5\paperwidth]current page.south west);
-    \fill[aneogray] ([xshift=0.5\paperwidth]current page.north west) rectangle (current page.south east);
-    % Aneo logo enclosed in a circle
-    \begin{scope}
-      \fill[aneogray] ([yshift=0.2\paperheight]current page.center) circle (1.5cm);
-      \node at ([yshift=0.2\paperheight]current page.center){%
-        \includegraphics[width=2cm,height=2cm,keepaspectratio]{LogoA_couleur.png}
-        };
-    \end{scope}
-    % Title info
-    \node[anchor=west, align=left] at ([yshift=-0.1\paperheight]current page.center){%
-      \begin{minipage}{0.4\paperwidth}
-        \usebeamerfont{title}\Large\inserttitle\\[1ex]
-        \usebeamerfont{title}\normalsize\insertsubtitle\\[1ex]
-        \usebeamerfont{institute}\footnotesize\insertinstitute \\[1ex]
-        \usebeamerfont{author}\large\insertauthor\\[1ex]
-        \usebeamerfont{date}\footnotesize\insertdate
-      \end{minipage}
-     };%
+    % Orange top bar
+    \fill[aneoorange] (current page.north west) rectangle ([yshift=-0.1\paperheight]current page.north east);
+    % Blue bottom bar
+    \fill[aneoblue] (current page.south west) rectangle ([yshift=0.08\paperheight]current page.south east);
+    % Title
+    \node[anchor=center, align=center, text width=0.82\paperwidth]
+      at ([yshift=0.14\paperheight]current page.center){%
+        {\usebeamerfont{title}\LARGE\color{aneoblue}\inserttitle}%
+    };
+    % Subtitle
+    \node[anchor=center, align=center, text width=0.82\paperwidth]
+      at ([yshift=0.06\paperheight]current page.center){%
+        {\usebeamerfont{subtitle}\large\color{aneoblack}\insertsubtitle}%
+    };
+    % Author and date
+    \node[anchor=center, align=center, text width=0.82\paperwidth]
+      at ([yshift=-0.03\paperheight]current page.center){%
+        {\usebeamerfont{author}\normalsize\color{aneoblack}\insertauthor}%
+        \quad\textbullet\quad%
+        {\usebeamerfont{date}\normalsize\color{aneoblack}\insertdate}%
+    };
+    % Aneo and ArmoniK logos side by side
+    \node[anchor=center]
+      at ([yshift=-0.14\paperheight]current page.center){%
+        \includegraphics[height=1.2cm]{LOGO_COULEUR_1.png}%
+    };
   \end{tikzpicture}
 }
 \renewcommand{\titlepage}{
