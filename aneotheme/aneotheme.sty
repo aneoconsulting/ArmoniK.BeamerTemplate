@@ -1,4 +1,20 @@
 \ProvidesPackage{aneotheme}
+
+% --- Package options ---
+% blue: blue header/footer  |  white (default): gray header/footer
+% dark: dark background     |  light (default): light gray background
+\newif\if@aneoBlue
+\@aneoBluefalse
+
+\newif\if@aneoDark
+\@aneoDarkfalse
+
+\DeclareOption{blue}{\@aneoBluetrue}
+\DeclareOption{white}{\@aneoBluefalse}
+\DeclareOption{dark}{\@aneoDarktrue}
+\DeclareOption{light}{\@aneoDarkfalse}
+\ProcessOptions\relax
+
 \usetheme{default}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
@@ -39,8 +55,13 @@
 % Color of the outline section
 \setbeamercolor{section in toc}{fg=aneoblue}
 
-% All slides have custom gray as bg
-\setbeamercolor{background canvas}{bg=aneogray}
+% Background canvas
+\if@aneoDark
+  \setbeamercolor{background canvas}{bg=aneoblack}
+  \setbeamercolor{normal text}{fg=aneogray,bg=aneoblack}
+\else
+  \setbeamercolor{background canvas}{bg=aneogray}
+\fi
 
 % Block colors
 \setbeamerfont{block title}{family=\poppinsboldfont}
@@ -113,8 +134,18 @@
 
 % Custom footline with [short] title, [short] author and slide number
 \setbeamertemplate{footline}{}
-\setbeamercolor{author in head/foot}{bg=aneoblue, fg=aneogray}
-\setbeamercolor{title in head/foot}{bg=aneoblue, fg=aneogray}
+\if@aneoBlue
+  \setbeamercolor{author in head/foot}{bg=aneoblue, fg=aneogray}
+  \setbeamercolor{title in head/foot}{bg=aneoblue, fg=aneogray}
+\else
+  \if@aneoDark
+    \setbeamercolor{author in head/foot}{bg=aneoblack, fg=aneogray}
+    \setbeamercolor{title in head/foot}{bg=aneoblack, fg=aneogray}
+  \else
+    \setbeamercolor{author in head/foot}{bg=aneogray, fg=aneoblack}
+    \setbeamercolor{title in head/foot}{bg=aneogray, fg=aneoblack}
+  \fi
+\fi
 \setbeamertemplate{footline}{%
   \ifnum\value{framenumber}>0%
     \leavevmode%
@@ -141,7 +172,17 @@
 
 % Custom headline with current slide title left and aneo logo to the right
 \setbeamertemplate{headline}{}
-\setbeamercolor{frametitle}{fg=white,bg=aneoblue}
+\if@aneoBlue
+  \setbeamercolor{frametitle}{fg=white,bg=aneoblue}
+  \def\aneothemelogofile{LogoA_blanc.png}
+\else
+  \if@aneoDark
+    \setbeamercolor{frametitle}{fg=aneoorange,bg=aneoblack}
+  \else
+    \setbeamercolor{frametitle}{fg=aneoorange,bg=aneogray}
+  \fi
+  \def\aneothemelogofile{LogoA_couleur.png}
+\fi
 \newcommand{\safeinsertframetitle}{%
   \@ifundefined{insertframetitle}{}{%
     \insertframetitle%
@@ -158,7 +199,7 @@
       \hskip-0.05em%
       % Right box: aneo logo
       \begin{beamercolorbox}[wd=0.155\paperwidth,ht=3em,dp=2ex,rightskip=1em]{frametitle}%
-        \hfill\includegraphics[height=2.5em]{LogoA_blanc.png}%
+        \hfill\includegraphics[height=2.5em]{\aneothemelogofile}%
       \end{beamercolorbox}%
     }%
   \fi
