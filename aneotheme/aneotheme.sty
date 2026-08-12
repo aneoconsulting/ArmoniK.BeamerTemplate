@@ -21,6 +21,10 @@
 \ProcessOptions\relax
 
 \usetheme{default}
+% Top-align frames instead of beamer's default vertical centering. Must
+% stay in \AtBeginDocument — setting it earlier desyncs beamer's own setup
+% and corrupts \insertframetitle in the headline.
+\AtBeginDocument{\makeatletter\beamer@centeredfalse\makeatother}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{graphicx}
@@ -220,70 +224,37 @@
     \insertframetitle%
   }%
 }
-% Fixed height/depth for the title bar, computed once from the frametitle
-% font's metrics (not from a wrapped title) so it does not depend on the
-% "1em" of whatever font happens to be active where
-% \setbeamertemplate{headline} is expanded (that context is not the
-% frametitle font — using "3em" there previously produced a box far too
-% short for even a single line of frametitle text, clipping any title that
-% wrapped to two lines off the top of the slide).
-%
-% The title text itself is set in a \parbox[t] (see the headline template
-% below), so its reference point is the baseline of its FIRST line, not
-% the last. With an ordinary bottom-anchored paragraph, a one-line title's
-% baseline sits where a two-line title's *second* line would be, so a
-% one-line title's top edge ends up much lower on the slide than a
-% two-line title's top edge — titles visibly jump up/down across slide
-% transitions depending on whether they wrap. Top-anchoring makes the
-% first line's position independent of how many lines follow, so every
-% title starts at the same height regardless of wrapping.
+% Fixed title bar height/depth, computed once from the frametitle font's
+% own metrics (not a wrapped title, and not whatever font is active where
+% \setbeamertemplate{headline} is expanded).
 \newlength{\aneotitlebarht}
 \newlength{\aneotitlebardp}
-% Headroom added on top of the raw metrics, needed because real titles
-% (accents, tall glyphs) can exceed the "Ag" probe's ascent. Both boxes in
-% the headline row share one TeX baseline (set by \topskip from the box
-% with the larger declared height), so adding this to \aneotitlebarht
-% would also push the logo box's baseline — and therefore the logo itself
-% — down by the same amount if left uncompensated. \aneotitlebarpad is the
-% target top margin used to compensate both the title and the logo.
+% Headroom above the "Ag" probe for tall glyphs; also compensates the logo,
+% since both boxes in the headline row share one baseline.
 \newlength{\aneotitlebarpad}
-% Extra lift for the logo on top of the \aneotitlebarpad target margin,
-% moving it independently of the title bar's own sizing.
+% Extra logo lift, independent of \aneotitlebarpad.
 \newlength{\aneotitlebarlogolift}
-% Box used to measure the logo image's actual rendered height, so its
-% \raisebox compensation (like the title's \aneotitlebartoplift below) is
-% computed from its real size rather than assuming a value for "2.5em".
+% Holds the logo image so \raisebox below can use its real rendered height.
 \newsavebox{\aneologobox}
-% Lift for the title text: \aneotitlebarht is sized for TWO lines (so the
-% row stays tall enough for the logo), but the top-anchored \parbox[t]
-% title only has one line's worth of natural ascent, so without
-% compensation it sits with a big gap above it, hugging the bottom of the
-% tall box instead of its top. Raising it by the two-line/one-line probe
-% gap puts the title flush against the top margin regardless of box
-% height, independently of the logo's own positioning.
+% Lifts the title so a 1-line title's top matches a 2-line title's top
+% (the title box is top-anchored via \parbox[t], see headline below).
 \newlength{\aneotitlebartoplift}
 \AtBeginDocument{%
   \begingroup
     \usebeamerfont{frametitle}%
     \global\aneotitlebarpad=0.5ex
     \global\aneotitlebarlogolift=0pt
-    % Height: from a bottom-anchored two-line probe. Both boxes in the
-    % headline row share one TeX baseline (set by \topskip from the box
-    % with the larger declared height), so this also has to stay tall
-    % enough for the logo image — shrinking it to a single line's ascent
-    % starves the logo box of the room it needs and pushes the logo off
-    % the top of the slide.
+    % Height: two-line probe, tall enough to also fit the logo.
     \setbox0=\vbox{\hbox{Ag}\hbox{Ag}}%
     \global\aneotitlebarht=\ht0
     \global\advance\aneotitlebarht by \aneotitlebarpad
     \setbox2=\vbox{\hbox{Ag}}%
     \global\aneotitlebartoplift=\ht0
     \global\advance\aneotitlebartoplift by -\ht2
-    % Depth: from a TOP-anchored probe (first line's baseline), matching
-    % the \parbox[t] title below — it must reach past a possible second
-    % line, not just the last line's own descent.
-    \setbox1=\vtop{\hbox{Ag}\hbox{Ag}}%
-    \global\aneotitlebardp=\dp1
+    % Depth: same probe as height. beamercolorbox fixes ht/dp without
+    % moving its content, so total row size is just ht+dp — a top-anchored
+    % probe here would double-count the second line already in the height.
+    \global\aneotitlebardp=\dp0
     \global\advance\aneotitlebardp by 2ex
   \endgroup
 }
