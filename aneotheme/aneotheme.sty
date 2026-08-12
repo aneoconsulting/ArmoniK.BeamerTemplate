@@ -21,6 +21,10 @@
 \ProcessOptions\relax
 
 \usetheme{default}
+% Top-align frames instead of beamer's default vertical centering. Must
+% stay in \AtBeginDocument — setting it earlier desyncs beamer's own setup
+% and corrupts \insertframetitle in the headline.
+\AtBeginDocument{\makeatletter\beamer@centeredfalse\makeatother}
 \RequirePackage{tikz}
 \usetikzlibrary{calc}
 \RequirePackage{graphicx}
@@ -220,19 +224,54 @@
     \insertframetitle%
   }%
 }
+% Fixed title bar height/depth, computed once from the frametitle font's
+% own metrics (not a wrapped title, and not whatever font is active where
+% \setbeamertemplate{headline} is expanded).
+\newlength{\aneotitlebarht}
+\newlength{\aneotitlebardp}
+% Headroom above the "Ag" probe for tall glyphs; also compensates the logo,
+% since both boxes in the headline row share one baseline.
+\newlength{\aneotitlebarpad}
+% Extra logo lift, independent of \aneotitlebarpad.
+\newlength{\aneotitlebarlogolift}
+% Holds the logo image so \raisebox below can use its real rendered height.
+\newsavebox{\aneologobox}
+% Lifts the title so a 1-line title's top matches a 2-line title's top
+% (the title box is top-anchored via \parbox[t], see headline below).
+\newlength{\aneotitlebartoplift}
+\AtBeginDocument{%
+  \begingroup
+    \usebeamerfont{frametitle}%
+    \global\aneotitlebarpad=0.5ex
+    \global\aneotitlebarlogolift=0pt
+    % Height: two-line probe, tall enough to also fit the logo.
+    \setbox0=\vbox{\hbox{Ag}\hbox{Ag}}%
+    \global\aneotitlebarht=\ht0
+    \global\advance\aneotitlebarht by \aneotitlebarpad
+    \setbox2=\vbox{\hbox{Ag}}%
+    \global\aneotitlebartoplift=\ht0
+    \global\advance\aneotitlebartoplift by -\ht2
+    % Depth: same probe as height. beamercolorbox fixes ht/dp without
+    % moving its content, so total row size is just ht+dp — a top-anchored
+    % probe here would double-count the second line already in the height.
+    \global\aneotitlebardp=\dp0
+    \global\advance\aneotitlebardp by 2ex
+  \endgroup
+}
 \setbeamertemplate{headline}{%
   \ifnum\value{framenumber}>0
     \leavevmode
     \hbox to \paperwidth{%
       % Left box: slide title, empty if not defined
-      \begin{beamercolorbox}[wd=0.85\paperwidth,ht=3em,dp=2ex,leftskip=1em]{frametitle}%
-        \usebeamerfont{frametitle}\safeinsertframetitle
+      \begin{beamercolorbox}[wd=0.85\paperwidth,ht=\aneotitlebarht,dp=\aneotitlebardp,leftskip=1em]{frametitle}%
+        \raisebox{\aneotitlebartoplift}{\parbox[t]{\dimexpr\hsize-1em\relax}{\usebeamerfont{frametitle}\safeinsertframetitle}}%
       \end{beamercolorbox}%
       \kern-0.5pt%
       % Right box: aneo logo — 0.5pt overlap closes PDF anti-aliasing seam;
       % width adjusted so total remains exactly \paperwidth
-      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=3em,dp=2ex,rightskip=1em]{frametitle}%
-        \hfill\includegraphics[height=2.5em]{\aneothemelogofile}%
+      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=\aneotitlebarht,dp=\aneotitlebardp,rightskip=1em]{frametitle}%
+        \sbox{\aneologobox}{\includegraphics[height=2.5em]{\aneothemelogofile}}%
+        \hfill\raisebox{\dimexpr\aneotitlebarht-\ht\aneologobox-\aneotitlebarpad+\aneotitlebarlogolift\relax}{\usebox{\aneologobox}}%
       \end{beamercolorbox}%
     }%
   \fi
