@@ -220,18 +220,36 @@
     \insertframetitle%
   }%
 }
+% Fixed height for the title bar, sized to fit two lines of the frametitle
+% font. Computed once from font metrics (not from a wrapped title) so it
+% does not depend on the "1em" of whatever font happens to be active where
+% \setbeamertemplate{headline} is expanded (that context is not the
+% frametitle font — using "3em" there previously produced a box far too
+% short for even a single line of frametitle text, clipping any title that
+% wrapped to two lines off the top of the slide).
+\newlength{\aneotitlebarht}
+\newlength{\aneotitlebardp}
+\AtBeginDocument{%
+  \begingroup
+    \usebeamerfont{frametitle}%
+    \setbox0=\vbox{\hbox{Ag}\hbox{Ag}}%
+    \global\aneotitlebarht=\ht0
+    \global\aneotitlebardp=\dp0
+    \global\advance\aneotitlebardp by 2ex
+  \endgroup
+}
 \setbeamertemplate{headline}{%
   \ifnum\value{framenumber}>0
     \leavevmode
     \hbox to \paperwidth{%
       % Left box: slide title, empty if not defined
-      \begin{beamercolorbox}[wd=0.85\paperwidth,ht=3em,dp=2ex,leftskip=1em]{frametitle}%
+      \begin{beamercolorbox}[wd=0.85\paperwidth,ht=\aneotitlebarht,dp=\aneotitlebardp,leftskip=1em]{frametitle}%
         \usebeamerfont{frametitle}\safeinsertframetitle
       \end{beamercolorbox}%
       \kern-0.5pt%
       % Right box: aneo logo — 0.5pt overlap closes PDF anti-aliasing seam;
       % width adjusted so total remains exactly \paperwidth
-      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=3em,dp=2ex,rightskip=1em]{frametitle}%
+      \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=\aneotitlebarht,dp=\aneotitlebardp,rightskip=1em]{frametitle}%
         \hfill\includegraphics[height=2.5em]{\aneothemelogofile}%
       \end{beamercolorbox}%
     }%
