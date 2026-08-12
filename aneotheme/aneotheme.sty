@@ -220,21 +220,70 @@
     \insertframetitle%
   }%
 }
-% Fixed height for the title bar, sized to fit two lines of the frametitle
-% font. Computed once from font metrics (not from a wrapped title) so it
-% does not depend on the "1em" of whatever font happens to be active where
+% Fixed height/depth for the title bar, computed once from the frametitle
+% font's metrics (not from a wrapped title) so it does not depend on the
+% "1em" of whatever font happens to be active where
 % \setbeamertemplate{headline} is expanded (that context is not the
 % frametitle font — using "3em" there previously produced a box far too
 % short for even a single line of frametitle text, clipping any title that
 % wrapped to two lines off the top of the slide).
+%
+% The title text itself is set in a \parbox[t] (see the headline template
+% below), so its reference point is the baseline of its FIRST line, not
+% the last. With an ordinary bottom-anchored paragraph, a one-line title's
+% baseline sits where a two-line title's *second* line would be, so a
+% one-line title's top edge ends up much lower on the slide than a
+% two-line title's top edge — titles visibly jump up/down across slide
+% transitions depending on whether they wrap. Top-anchoring makes the
+% first line's position independent of how many lines follow, so every
+% title starts at the same height regardless of wrapping.
 \newlength{\aneotitlebarht}
 \newlength{\aneotitlebardp}
+% Headroom added on top of the raw metrics, needed because real titles
+% (accents, tall glyphs) can exceed the "Ag" probe's ascent. Both boxes in
+% the headline row share one TeX baseline (set by \topskip from the box
+% with the larger declared height), so adding this to \aneotitlebarht
+% would also push the logo box's baseline — and therefore the logo itself
+% — down by the same amount if left uncompensated. \aneotitlebarpad is the
+% target top margin used to compensate both the title and the logo.
+\newlength{\aneotitlebarpad}
+% Extra lift for the logo on top of the \aneotitlebarpad target margin,
+% moving it independently of the title bar's own sizing.
+\newlength{\aneotitlebarlogolift}
+% Box used to measure the logo image's actual rendered height, so its
+% \raisebox compensation (like the title's \aneotitlebartoplift below) is
+% computed from its real size rather than assuming a value for "2.5em".
+\newsavebox{\aneologobox}
+% Lift for the title text: \aneotitlebarht is sized for TWO lines (so the
+% row stays tall enough for the logo), but the top-anchored \parbox[t]
+% title only has one line's worth of natural ascent, so without
+% compensation it sits with a big gap above it, hugging the bottom of the
+% tall box instead of its top. Raising it by the two-line/one-line probe
+% gap puts the title flush against the top margin regardless of box
+% height, independently of the logo's own positioning.
+\newlength{\aneotitlebartoplift}
 \AtBeginDocument{%
   \begingroup
     \usebeamerfont{frametitle}%
+    \global\aneotitlebarpad=0.5ex
+    \global\aneotitlebarlogolift=0pt
+    % Height: from a bottom-anchored two-line probe. Both boxes in the
+    % headline row share one TeX baseline (set by \topskip from the box
+    % with the larger declared height), so this also has to stay tall
+    % enough for the logo image — shrinking it to a single line's ascent
+    % starves the logo box of the room it needs and pushes the logo off
+    % the top of the slide.
     \setbox0=\vbox{\hbox{Ag}\hbox{Ag}}%
     \global\aneotitlebarht=\ht0
-    \global\aneotitlebardp=\dp0
+    \global\advance\aneotitlebarht by \aneotitlebarpad
+    \setbox2=\vbox{\hbox{Ag}}%
+    \global\aneotitlebartoplift=\ht0
+    \global\advance\aneotitlebartoplift by -\ht2
+    % Depth: from a TOP-anchored probe (first line's baseline), matching
+    % the \parbox[t] title below — it must reach past a possible second
+    % line, not just the last line's own descent.
+    \setbox1=\vtop{\hbox{Ag}\hbox{Ag}}%
+    \global\aneotitlebardp=\dp1
     \global\advance\aneotitlebardp by 2ex
   \endgroup
 }
@@ -244,13 +293,14 @@
     \hbox to \paperwidth{%
       % Left box: slide title, empty if not defined
       \begin{beamercolorbox}[wd=0.85\paperwidth,ht=\aneotitlebarht,dp=\aneotitlebardp,leftskip=1em]{frametitle}%
-        \usebeamerfont{frametitle}\safeinsertframetitle
+        \raisebox{\aneotitlebartoplift}{\parbox[t]{\dimexpr\hsize-1em\relax}{\usebeamerfont{frametitle}\safeinsertframetitle}}%
       \end{beamercolorbox}%
       \kern-0.5pt%
       % Right box: aneo logo — 0.5pt overlap closes PDF anti-aliasing seam;
       % width adjusted so total remains exactly \paperwidth
       \begin{beamercolorbox}[wd=\dimexpr\paperwidth-0.85\paperwidth+0.5pt\relax,ht=\aneotitlebarht,dp=\aneotitlebardp,rightskip=1em]{frametitle}%
-        \hfill\includegraphics[height=2.5em]{\aneothemelogofile}%
+        \sbox{\aneologobox}{\includegraphics[height=2.5em]{\aneothemelogofile}}%
+        \hfill\raisebox{\dimexpr\aneotitlebarht-\ht\aneologobox-\aneotitlebarpad+\aneotitlebarlogolift\relax}{\usebox{\aneologobox}}%
       \end{beamercolorbox}%
     }%
   \fi
