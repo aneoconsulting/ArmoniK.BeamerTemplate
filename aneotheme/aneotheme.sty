@@ -132,8 +132,10 @@
     \node[anchor=center, align=center, text width=0.82\paperwidth]
       at ([yshift=-0.03\paperheight]current page.center){%
         {\usebeamerfont{author}\normalsize\color{aneoblack}\insertauthor}%
-        \quad\textbullet\quad%
-        {\usebeamerfont{date}\normalsize\color{aneoblack}\insertdate}%
+        \ifx\insertdate\empty\else
+          \quad\textbullet\quad%
+          {\usebeamerfont{date}\normalsize\color{aneoblack}\insertdate}%
+        \fi
     };
     % Release/build version, if available
     \ifx\buildversion\empty\else
